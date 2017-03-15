@@ -4,7 +4,7 @@
     <Identity Id="b61761b3-d13a-42a7-8799-8dbc603ff1e7" Version="1.5" Language="en-US" Publisher="munyabe" />
     <DisplayName>Toggle Comment</DisplayName>
     <Description>This is a simple visual studio extension to comment/uncomment the selected lines.</Description>
-    <MoreInfo>https://visualstudiogallery.msdn.microsoft.com/964eee4b-2f38-43ab-93be-0ffd598d2c25</MoreInfo>
+    <MoreInfo>https://marketplace.visualstudio.com/items?itemName=munyabe.ToggleComment</MoreInfo>
     <License>LICENSE.txt</License>
     <Icon>Resources\Package.ico</Icon>
     <PreviewImage>Resources\Preview.png</PreviewImage>
