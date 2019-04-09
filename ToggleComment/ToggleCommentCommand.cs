@@ -70,6 +70,7 @@ namespace ToggleComment
                 if (0 < patterns.Length)
                 {
                     var selection = textDocument.Selection;
+                    var originalSelection = new Tuple<EditPoint, EditPoint>(selection.TopPoint.CreateEditPoint(), selection.BottomPoint.CreateEditPoint());
                     SelectLines(selection);
                     var text = selection.Text;
 
@@ -77,6 +78,7 @@ namespace ToggleComment
                     var commandId = isComment ? VSConstants.VSStd2KCmdID.UNCOMMENT_BLOCK : VSConstants.VSStd2KCmdID.COMMENT_BLOCK;
 
                     ExecuteCommand(commandId);
+                    SetSelection(selection, originalSelection);
                 }
                 else if (ExecuteCommand(VSConstants.VSStd2KCmdID.COMMENT_BLOCK) == false)
                 {
@@ -104,7 +106,7 @@ namespace ToggleComment
                 case "XML":
                 case "XAML":
                     {
-                        return new[] { new BlockCommentPattern("<!--", "-->") };
+                        return new ICodeCommentPattern[] { new BlockCommentPattern("<!--", "-->") };
                     }
                 case "HTMLX":
                     {
@@ -128,28 +130,28 @@ namespace ToggleComment
                 case "F#":
                     {
                         // MEMO : VS の UncommentSelection コマンドが JavaScript, F# のブロックコメントに対応していない
-                        return new[] { new LineCommentPattern("//") };
+                        return new ICodeCommentPattern[] { new LineCommentPattern("//") };
                     }
                 case "CSS":
                     {
-                        return new[] { new BlockCommentPattern("/*", "*/") };
+                        return new ICodeCommentPattern[] { new BlockCommentPattern("/*", "*/") };
                     }
                 case "PowerShell":
                     {
                         // MEMO : VS の UncommentSelection コマンドが PowerShell のブロックコメントに対応していない
-                        return new[] { new LineCommentPattern("#") };
+                        return new ICodeCommentPattern[] { new LineCommentPattern("#") };
                     }
                 case "SQL Server Tools":
                     {
-                        return new[] { new LineCommentPattern("--") };
+                        return new ICodeCommentPattern[] { new LineCommentPattern("--") };
                     }
                 case "Basic":
                     {
-                        return new[] { new LineCommentPattern("'") };
+                        return new ICodeCommentPattern[] { new LineCommentPattern("'") };
                     }
                 case "Python":
                     {
-                        return new[] { new LineCommentPattern("#") };
+                        return new ICodeCommentPattern[] { new LineCommentPattern("#") };
                     }
                 default:
                     {
@@ -164,8 +166,8 @@ namespace ToggleComment
         /// </summary>
         private bool ExecuteCommand(VSConstants.VSStd2KCmdID commandId)
         {
-            var grooupId = VSConstants.VSStd2K;
-            var result = _commandTarget.Exec(ref grooupId, (uint)commandId, 0, IntPtr.Zero, IntPtr.Zero);
+            var groupId = VSConstants.VSStd2K;
+            var result = _commandTarget.Exec(ref groupId, (uint)commandId, 0, IntPtr.Zero, IntPtr.Zero);
 
             return result == VSConstants.S_OK;
         }
@@ -184,13 +186,23 @@ namespace ToggleComment
                 endPoint.EndOfLine();
             }
 
+            SetSelection(selection, new Tuple<EditPoint, EditPoint>(startPoint, endPoint));
+        }
+
+        /// <summary>
+        /// Sets the selected text to the provided state.
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <param name="newSelection">The new selection.</param>
+        private static void SetSelection(TextSelection selection, Tuple<EditPoint, EditPoint> newSelection)
+        {
             if (selection.Mode == vsSelectionMode.vsSelectionModeBox)
             {
                 selection.Mode = vsSelectionMode.vsSelectionModeStream;
             }
 
-            selection.MoveToPoint(startPoint);
-            selection.MoveToPoint(endPoint, true);
+            selection.MoveToPoint(newSelection.Item1);
+            selection.MoveToPoint(newSelection.Item2, true);
         }
     }
 }
